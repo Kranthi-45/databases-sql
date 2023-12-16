@@ -1,0 +1,217 @@
+
+Oracle DB using local zip installation:
+--------------------------
+
+https://container-registry.oracle.com/
+
+- standard db choose or enterprice edition & proceed
+- local oracle dotware
+  all usernames /password  = root
+
+link:
+
+https://container-registry.oracle.com/ords/f?p=113:4:127547874814087:::4:P4_REPOSITORY,AI_REPOSITORY,AI_REPOSITORY_NAME,P4_REPOSITORY_NAME,P4_EULA_ID,P4_BUSINESS_AREA_ID:9,9,Oracle%20Database%20Enterprise%20Edition,Oracle%20Database%20Enterprise%20Edition,1,0&cs=3vd-xsRwemyDrSoZ7SVIzQXv-KPsWAnHMnHdxJpYWvnA82nZFLXXqM5j4EkxYkv-VFBpN5URxZ30nO-HkO8zcUA
+
+-> not installed properly
+
+									or
+
+
+----------------------------------------------------------------------
+
+Oracle DB using Docker image:
+--------------------------
+->	dockerhub : search for doctorkirk/oracle-19c
+
+	https://hub.docker.com/r/doctorkirk/oracle-19c
+
+-> Please follow steps in above docker link or use below steps it is also same
+
+-> Open the docker application in local first
+
+-> Then open terminal/cmd & hit below commands
+
+-> docker pull doctorkirk/oracle-19c
+
+-> go to D drive 
+	-> create folder(oracle-19c)
+		 	   subfoler(oradata)
+
+-> Run the Container using below command in terminal
+
+docker run --name oracle-19c \
+-p 1521:1521 \
+-e ORACLE_SID=[ORACLE_SID] \
+-e ORACLE_PWD=[ORACLE_PASSWORD] \
+-e ORACLE_CHARACTERSET=[CHARSET] \
+-v /your/custom/path/oracle-19c/oradata/:/opt/oracle/oradata \             (paste ur path  D:\oracle-19c\oradata in custom path place)
+doctorkirk/oracle-19c
+
+                 or
+
+docker run --name oracle-19c \
+-p 1521:1521 \
+-e ORACLE_SID=orcl \
+-e ORACLE_PWD=root \
+-e ORACLE_MEM=2000 \
+-v D:/oracle-19c/oradata:/opt/oracle/oradata \                              (paste ur path  D:\oracle-19c\oradata)
+doctorkirk/oracle-19c
+
+		or
+
+docker run -d --name oracle-19c -p 1521:1521 -e ORACLE_SID=orcl -e ORACLE_PWD=root -e ORACLE_MEM=2000 -v D:/oracle-19c/oradata:/opt/oracle/oradata                 doctorkirk/oracle-19c
+
+-> If you get any errors while running above command remove below image
+
+docker rm -f 97e12af68a93c855163e6a1d3edbe509afa2177ea14202cee8f986e52177c348
+            or
+docker rm oracle-19c
+
+If u want to start the stopped oracle container:
+========================================
+-> remove container & do docker run
+
+	docker rm oracle-19c
+	docker run -d ------------------------
+
+-> Restart existing stopped container
+	
+	docker restart oracle-19c / docker start oracle-19c
+
+-> Check running/started containers
+
+	docker ps
+
+
+Check Existing processID & Kill
+====================================
+
+-> open terminal as Admin & hit below commands
+
+-> netstat -ano | find "1521"
+-> taskkill /F /PID 34852
+
+Connection or DB details:
+========================== 
+
+sys is the username.
+root is the password.
+localhost is the hostname.
+1521 is the port number.
+orcl is the Oracle System Identifier (SID), and it's specified in the -e ORACLE_SID=orcl part of your Docker run command.
+
+
+Connect Using SQL*Plus (via Terminal or Powershell):
+============================
+
+sqlplus /nolog
+
+CONNECT username/password@//hostname:port/service_name (sample)
+CONNECT sys/root@//localhost:1521/orcl AS SYSDBA
+
+SELECT * FROM v$version;
+
+SELECT * FROM v$database;
+
+
+Connect Using SQL developer as workbench for oracle
+==============================================
+
+https://docs.oracle.com/en/database/oracle/machine-learning/oml4sql/21/mlsql/install-sql-developer.html#GUID-C0B46925-FA73-4B86-A88E-746594762168
+
+
+
+Connect Using SQLcli: another cli tool connect to oracleDB
+================================================
+
+sql username/password@//hostname:port/service_name (sample)
+sqlplus sys/root@//localhost:1521/orcl as sysdba
+
+
+Oracle SQL Syntaxs:
+==============================================
+
+SELECT * FROM v$version;
+
+SELECT * FROM v$database;
+
+SELECT table_name FROM all_tables WHERE owner = 'YOUR_SCHEMA_NAME';
+
+
+CREATE TABLE employees (
+   employee_id NUMBER,
+   first_name VARCHAR2(50),
+   last_name VARCHAR2(50),
+   hire_date DATE
+);
+
+SELECT * FROM mytable;
+
+-(list tables for a specific user):
+SELECT table_name
+FROM all_tables
+WHERE owner = 'your_username';      	(when connect as sysdba)
+
+-(list tables for the currently connected user):
+SELECT table_name, owner
+FROM user_tables;           		(when connected to user itself)
+
+-(list all tables regardless of the user):
+SELECT table_name, owner
+FROM all_tables;
+
+
+ALL_TABLES: Shows all tables in the database accessible to the current user.
+DBA_TABLES: Shows all tables in the entire database.
+USER_TABLES: Shows tables owned by the current user.
+
+Imp points:
+============
+
+=> Creating a new database and shifting to that database involves a series of steps (like in MySQL). In Oracle, you typically create a new user/schema, and a schema is closely related to a user and vice versa. Here's an example of how you can create a new user, a new database, and then create a table in that database:
+
+1.Connect as SYSDBA:
+CONNECT sys/root@//localhost:1521/orcl AS SYSDBA
+
+2.Create a New User:
+CREATE USER your_username IDENTIFIED BY your_password;
+
+3.Grant Necessary Privileges to the User created:
+GRANT CONNECT, RESOURCE TO your_username;
+GRANT UNLIMITED TABLESPACE TO your_username;
+
+4.Create a New Tablespace (Optional):useful for managing storage.
+CREATE TABLESPACE your_tablespace DATAFILE 'your_tablespace.dbf' SIZE 100M AUTOEXTEND ON;
+
+5.Switch to the New User:
+CONNECT your_username/your_password@//localhost:1521/orcl
+
+6.Create a New Table:(in newly created user)
+CREATE TABLE employees (
+   employee_id NUMBER,
+   first_name VARCHAR2(50),
+   last_name VARCHAR2(50),
+   hire_date DATE
+);
+          or      (with tablespace)
+
+CREATE TABLE myuser.mytable (
+    id NUMBER PRIMARY KEY,
+    name VARCHAR2(50)
+) TABLESPACE mytablespace;
+
+7.
+
+=> In Oracle, the concept of a "database" is a bit different compared to MySQL. Oracle typically uses the term "database" to refer to the entire Oracle Database system, which may consist of multiple schemas (users) and tablespaces.
+
+=> When you create a user/schema in Oracle, it's essentially creating a logical separation for that user within the Oracle Database. Each user can have its own set of tables, views, and other database objects.
+
+=> So, in Oracle, you are essentially working within a database, and users are logical containers within that database. The tablespaces help manage the physical storage.
+
+=> If you need to work with multiple independent databases, you may need to set up separate Oracle Database instances, which is a more complex task involving Oracle Database software installation and configuration.
+
+learning link:
+https://www.youtube.com/watch?v=1Lw0nhfLzWA
+
+
+==================================================================
